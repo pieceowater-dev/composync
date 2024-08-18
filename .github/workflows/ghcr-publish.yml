@@ -64,13 +64,16 @@ jobs:
           build-args: |
             BUILD_MODE=${{ github.ref_name }}
 
+      - name: Extract repository name
+        id: extract_repo_name
+        run: echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
+          
       - name: Build and push Docker image to Docker Hub
-        id: build-and-push-dockerhub
         uses: docker/build-push-action@v3
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/$(echo ${{ github.repository }} | cut -d'/' -f2):latest
-            ${{ env.DOCKERHUB_USERNAME }}/$(echo ${{ github.repository }} | cut -d'/' -f2):${{ env.GIT_SHORT_SHA }}
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}:latest
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}:${{ env.GIT_SHORT_SHA }}
