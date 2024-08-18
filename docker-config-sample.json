@@ -1,0 +1,7 @@
+{
+	"auths": {
+		"some.registry": { 
+			"auth": "yourbase64encodedauthstring"
+		}
+	}
+}

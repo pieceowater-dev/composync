@@ -5,7 +5,8 @@ RUN apk add --no-cache \
     git \
     curl \
     docker \
-    bash
+    bash \
+    ncurses
 
 # Install Docker Compose
 RUN curl -L "https://github.com/docker/compose/releases/download/v2.14.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
@@ -22,7 +23,9 @@ ENV INTERVAL=5 \
     REPO_URL="" \
     BRANCH="main" \
     SCAN_DIR="/" \
-    RECURSIVE=false
+    RECURSIVE=false \
+    GIT_USERNAME="" \
+    GIT_PAT=""
 
 # Copy and make the entrypoint script executable
 COPY entrypoint.sh /entrypoint.sh

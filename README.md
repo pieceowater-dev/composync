@@ -54,15 +54,16 @@ services:
         image: composync
         environment:
             - INTERVAL=30
-            - REPO_URL='<your-repo-url>'
+            - REPO_URL='https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git'
             - BRANCH='main'
             - SCAN-DIR='/' # root dir with docker-compose file
             - RECURSIVE=true # if you want to run every inner docker-compose files
+            - GIT_USERNAME=pieceowater
+            - GIT_PAT=ghp_12345...abc
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+            - /path/to/your/docker-config.json:/root/.docker/config.json
 ```
-
-Replace `<your-repo-url>` with the URL of your repository.
 
 To run the container using the Docker Compose file, navigate to the directory where the file is located and run the following command:
 

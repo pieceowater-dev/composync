@@ -16,21 +16,11 @@ export STRIKE='\033[9m'
 
 term_width=$(tput cols)
 
-print_centered() {
-    local text="$1"
-    local text_length=${#text}
-    local padding=$(( (term_width - text_length - 2) / 2 ))
-    printf "${BLUE}${BOLD}%*s%s%*s${NC}\n" $padding "" "$text" $padding ""
-}
-
 echo -e "${YELLOW}$(printf "=%.0s" $(seq 1 $term_width))${NC}"
-
-print_centered "- COMPOSYNC! -"
-print_centered "COMPOSYNC automates the updating of your Docker Compose containers"
-print_centered "by continuously pulling and applying the latest changes from your remote repositories' Docker Compose files."
-print_centered "Enjoy seamless Docker Compose updates!"
-print_centered "by pieceowater"
-
+echo -e "${GREEN}${BOLD}--- COMPOSYNC! ---${NC}"
+echo -e "${BLUE}COMPOSYNC automates the updating of your Docker Compose containers by continuously pulling and applying the latest changes from your remote repositories' Docker Compose files.${NC}"
+echo -e "${BLUE}Enjoy seamless Docker Compose updates!${NC}"
+echo -e "by ${BOLD}pieceowater${NC}"
 echo -e "${YELLOW}$(printf "=%.0s" $(seq 1 $term_width))${NC}"
 
 
@@ -38,12 +28,16 @@ echo -e "${YELLOW}$(printf "=%.0s" $(seq 1 $term_width))${NC}"
 #     --repo="https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git" \
 #     --branch="main" \
 #     --scan-dir="/" \
-#     --recursive=true
+#     --recursive=true \
+#     --username="pieceowater" \
+#     --token="ghp_1234567890"
 
 export REPO_URL=""
 export BRANCH="main"
 export SCAN_DIR="/"
 export RECURSIVE=false
+export GIT_USERNAME=""
+export GIT_PAT=""
 
 # Parse arguments
 for arg in "$@"
@@ -68,6 +62,16 @@ do
         RECURSIVE="${arg#*=}"
         shift
         ;;
+
+        --username=*)
+        GIT_USERNAME="${arg#*=}"
+        shift
+        ;;
+
+        --token=*)
+        GIT_PAT="${arg#*=}"
+        shift
+        ;;
         
         *)
         echo -e "${RED}Unknown option $arg${NC}"
@@ -75,6 +79,9 @@ do
         ;;
     esac
 done
+
+chmod +x ./store_git_creds.sh
+./store_git_creds.sh
 
 echo -e "${GREEN}Repository URL: $REPO_URL${NC}"
 echo -e "${GREEN}Branch: $BRANCH${NC}"
