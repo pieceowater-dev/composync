@@ -53,7 +53,7 @@ jobs:
         run: echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
 
       - name: Build and push Docker image to GitHub Container Registry
-        id: build-and-push
+        id: build-and-push-gcr
         uses: docker/build-push-action@v5.0.0
         with:
           context: .
@@ -69,6 +69,7 @@ jobs:
             BUILD_MODE=${{ github.ref_name }}
 
       - name: Build and push Docker image to Docker Hub
+        id: build-and-push-dockerhub
         uses: docker/build-push-action@v3
         with:
           context: .
