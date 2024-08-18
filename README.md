@@ -1,4 +1,3 @@
-
 # COMPOSYNC
 
 COMPOSYNC is a powerful utility that automates the updating of your Docker Compose containers. It continuously pulls and applies the latest changes from your remote repositories' Docker Compose files, ensuring that your containers are always up to date.
@@ -31,18 +30,37 @@ You can install Docker by following the official installation guide for your ope
 You can install Docker Compose by following the official installation guide:
 - [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
-### Running COMPOSYNC
+### Configuration
 
-Once Docker and Docker Compose are installed, you can start using COMPOSYNC by running the following command:
+1. **Generate Authentication Token**: Execute the following command to generate a base64-encoded GitHub authentication token:
+   ```shell
+   echo -n 'GITHUBUSERNAME:TOKEN' | base64
+   ```
 
-```shell
-docker run -d --name cmps \
-    -e INTERVAL=5 \
-    -e REPO_URL="https://github.com/your-repo-url.git" \
-    -v /var/run/docker.sock:/var/run/docker.sock composync
-```
+2. **Create Configuration File**: Create a file named `config.json` with the following content, replacing `YOUR_BASE64_ENCODED_TOKEN` with the output from the previous step:
+   ```json
+   {
+       "auths": {
+           "ghcr.io": { 
+               "auth": "YOUR_BASE64_ENCODED_TOKEN"
+           }
+       }
+   }
+   ```
 
-Make sure to replace the `REPO_URL` with your repository's URL.
+3. **Run COMPOSYNC Container**: Start the COMPOSYNC container using the following command, replacing placeholders with your actual values:
+   ```shell
+   docker run -d --name composync \
+       -e INTERVAL=30 \
+       -e REPO_URL="https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git" \
+       -e GIT_USERNAME=GITHUBUSERNAME \
+       -e GIT_PAT=TOKEN \
+       -v /var/run/docker.sock:/var/run/docker.sock \
+       -v ~/PATH/TO/config.json:/root/.docker/config.json \
+       yurymid/composync
+   ```
+
+   also you can run with this flag ```--platform linux/amd64```
 
 ## Docker Compose Run
 
@@ -57,7 +75,7 @@ services:
             - REPO_URL='https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git'
             - BRANCH='main'
             - SCAN-DIR='/' # root dir with docker-compose file
-            - RECURSIVE=true # if you want to run every inner docker-compose files
+            - RECURSIVE=true # if you want to run every inner docker-compose file
             - GIT_USERNAME=pieceowater
             - GIT_PAT=ghp_12345...abc
         volumes:
@@ -75,13 +93,7 @@ This will start the COMPOSYNC container with the specified environment variables
 
 Remember to adjust any other parameters or configurations according to your specific needs.
 
-
-
----
-
-This addition ensures that users are aware of the minimum requirements before using COMPOSYNC.
-
-## Getting Started (Unconteinerized)
+## Getting Started (Uncontainerized)
 
 To start using COMPOSYNC, follow these steps:
 
