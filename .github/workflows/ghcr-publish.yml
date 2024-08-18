@@ -46,11 +46,11 @@ jobs:
 
       - name: Get short commit SHA
         id: get_sha
-        run: |
-          echo "${{ github.repository.name }}" || true
-          echo "${{ github.ref_name }}" || true
-          echo "${{ github.repository.ref_name }}" || true
-          echo "GIT_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "GIT_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Extract repo name
+        id: extract_repo_name
+        run: echo "REPO_NAME=$(echo ${{ env.IMAGE_NAME }} | cut -d'/' -f2)" >> $GITHUB_ENV
 
       - name: Build and push Docker image
         id: build-and-push
@@ -68,12 +68,12 @@ jobs:
           build-args: |
             BUILD_MODE=${{ github.ref_name }}
 
-      # - name: Build and push Docker image
-      #   uses: docker/build-push-action@v3
-      #   with:
-      #     context: .
-      #     file: Dockerfile
-      #     push: true
-      #     tags: |
-      #       ${{ env.DOCKERHUB_USERNAME }}/${{ github.repository.name }}:latest
-      #       ${{ env.DOCKERHUB_USERNAME }}/${{ github.repository.name }}:${{ env.GIT_SHORT_SHA }}
+      - name: Build and push Docker image to Docker Hub
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/${{ steps.extract_repo_name.outputs.REPO_NAME }}:latest
+            ${{ env.DOCKERHUB_USERNAME }}/${{ steps.extract_repo_name.outputs.REPO_NAME }}:${{ env.GIT_SHORT_SHA }}
