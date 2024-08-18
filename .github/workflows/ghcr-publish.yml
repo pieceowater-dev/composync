@@ -47,9 +47,9 @@ jobs:
       - name: Get short commit SHA
         id: get_sha
         run: |
-          echo ${{ github.repository.name }} || true
-          echo ${{ github.ref_name }} || true
-          echo ${{ github.repository.ref_name }} || true
+          echo "${{ github.repository.name }}" || true
+          echo "${{ github.ref_name }}" || true
+          echo "${{ github.repository.ref_name }}" || true
           echo "GIT_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Build and push Docker image
