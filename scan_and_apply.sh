@@ -12,5 +12,5 @@ fi
 
 find "$SCAN_PATH" $FIND_OPTIONS -type f \( -name 'docker-compose.yaml' -o -name 'docker-compose.yml' \) | while read -r file; do
     echo -e "${GREEN}Found${NC} docker-compose file: ${BLINK}${UNDERLINE}$file${NC}"
-    docker-compose -f "$file" up -d --pull || docker compose -f "$file" up -d --pull || echo -e "${RED}Error running docker-compose up -d${NC}"
+    docker-compose -f "$file" up --pull always -d || docker compose -f "$file" up --pull always -d || echo -e "${RED}Error running docker-compose up -d${NC}"
 done
