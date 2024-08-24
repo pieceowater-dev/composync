@@ -94,9 +94,9 @@ services:
     image: yurymid/composync
     environment:
       - INTERVAL=30
-      - REPO_URL='https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git'
-      - BRANCH='main'
-      - SCAN-DIR='/'
+      - REPO_URL=https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git
+      - BRANCH=main
+      - SCAN-DIR=/
       - RECURSIVE=true
       - GIT_USERNAME=pieceowater
       - GIT_PAT=ghp_12345...abc
