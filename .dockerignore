@@ -1,2 +1,6 @@
 *
-!*.sh
+!*.go
+!go.mod
+!go.sum
+!*/*.go
+!entrypoint.sh

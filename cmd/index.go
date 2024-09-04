@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"net/url"
 	"os"
+	"time"
 )
 
 var rootCmd = &cobra.Command{
@@ -35,6 +36,7 @@ var goCmd = &cobra.Command{
 		recursive, _ := cmd.Flags().GetBool("recursive")
 		username, _ := cmd.Flags().GetString("username")
 		token, _ := cmd.Flags().GetString("token")
+		interval, _ := cmd.Flags().GetInt("interval")
 
 		// Set default values
 		if branch == "" {
@@ -68,31 +70,43 @@ var goCmd = &cobra.Command{
 		})
 		fmt.Printf("%sUsing repository: %s%s\n", blue, repoURL, reset)
 
-		// Execute commands
-		commands := []struct {
-			name string
-			fn   func() error
-		}{
-			{"storeGitCreds", func() error {
-				return storeGitCreds(username, token)
-			}},
-			{"setupWorkdir", func() error {
-				return setupWorkdir(repoURL)
-			}},
-			{"fetchUpdates", func() error {
-				return fetchUpdates(repoURL, branch)
-			}},
-			{"scanAndApply", func() error {
-				return scanAndApply(scanDir, recursive)
-			}},
+		// Define the function that runs the commands
+		runCommands := func() {
+			commands := []struct {
+				name string
+				fn   func() error
+			}{
+				{"storeGitCreds", func() error {
+					return storeGitCreds(username, token)
+				}},
+				{"setupWorkdir", func() error {
+					return setupWorkdir(repoURL)
+				}},
+				{"fetchUpdates", func() error {
+					return fetchUpdates(repoURL, branch)
+				}},
+				{"scanAndApply", func() error {
+					return scanAndApply(scanDir, recursive)
+				}},
+			}
+
+			for _, c := range commands {
+				fmt.Printf("%sRunning %s...%s\n", blue, c.name, reset)
+				if err := c.fn(); err != nil {
+					fmt.Printf("%sError executing %s: %s%s\n", red, c.name, err, reset)
+					os.Exit(1)
+				}
+			}
 		}
 
-		for _, c := range commands {
-			fmt.Printf("%sRunning %s...%s\n", blue, c.name, reset)
-			if err := c.fn(); err != nil {
-				fmt.Printf("%sError executing %s: %s%s\n", red, c.name, err, reset)
-				os.Exit(1)
+		if interval > 0 {
+			for {
+				runCommands()
+				fmt.Printf("%sSleeping for %d minutes...%s\n", yellow, interval, reset)
+				time.Sleep(time.Duration(interval) * time.Minute)
 			}
+		} else {
+			runCommands()
 		}
 	},
 }
@@ -116,6 +130,7 @@ func init() {
 	rootCmd.PersistentFlags().Bool("recursive", false, "Scan directories recursively")
 	rootCmd.PersistentFlags().String("username", "", "Git username")
 	rootCmd.PersistentFlags().String("token", "", "Git personal access token")
+	rootCmd.PersistentFlags().Int("interval", 0, "Interval in minutes to repeat the command. Set to 0 to run once.")
 
 	rootCmd.AddCommand(goCmd)
 }

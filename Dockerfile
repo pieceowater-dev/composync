@@ -1,38 +1,50 @@
-FROM alpine:latest
+# Stage 1: Build the Go application
+FROM golang:1.23-alpine AS builder
 
-# Install dependencies and Docker Compose in a single RUN command
+WORKDIR /app
+
+# Install build dependencies
 RUN apk add --no-cache \
     git \
     curl \
-    docker \
     bash \
     ncurses
 
-# Install Docker Compose
+# Copy Go module files
+COPY go.mod go.sum ./
+
+# Download Go module dependencies
+RUN go mod download
+
+# Copy the rest of the application source code
+COPY . .
+
+# Build the Go application
+RUN go build -o composync ./main.go
+
+# Stage 2: Create the final image with runtime dependencies
+FROM alpine:latest
+
+# Install runtime dependencies including bash and git
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    ncurses
+
+# Install Docker Compose (only if absolutely necessary)
 RUN curl -L "https://github.com/docker/compose/releases/download/v2.14.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
-# Set the working directory
-WORKDIR /app
+# Copy the built Go application from the builder stage
+COPY --from=builder /app/composync /usr/local/bin/composync
 
-# Copy application files
-COPY . /app/
+# Copy the entrypoint script and set permissions
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Set environment variables
-ENV INTERVAL=5 \
-    REPO_URL="" \
-    BRANCH="main" \
-    SCAN_DIR="/" \
-    RECURSIVE=false \
-    GIT_USERNAME="" \
-    GIT_PAT=""
+# Set the entrypoint for the container
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-# Copy and make the entrypoint script executable
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Mount the Docker socket volume
-VOLUME /var/run/docker.sock
-
-# Use the entrypoint script to start the process
-ENTRYPOINT ["/entrypoint.sh"]
+# Default command (uses environment variables)
+CMD ["go", "--interval=${INTERVAL}", "--repo=${REPO_URL}", "--branch=${BRANCH}", "--scan-dir=${SCAN_DIR}", "--recursive=${RECURSIVE}", "--username=${GIT_USERNAME}", "--token=${GIT_PAT}"]

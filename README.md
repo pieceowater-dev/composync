@@ -15,29 +15,19 @@ COMPOSYNC scans a specified directory for Docker Compose files (`docker-compose.
 
 ## Quick Start
 
-To get started with COMPOSYNC, simply use Docker Compose:
+To get started with COMPOSYNC, simply use Docker:
 
-```yaml
-services:
-  composync:
-    image: yurymid/composync
-    environment:
-      - REPO_URL='https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git' # Your Docker Compose repo
-      - BRANCH='main' # Optional: Specify the branch
-      - INTERVAL=30 # Check for updates every 30 seconds
-      - SCAN-DIR='/' # Optional: Directory with Docker Compose file in remote repo
-      - RECURSIVE=true # Optional: Run for every inner Docker Compose file
-      - GIT_USERNAME=<YOUR_GIT_USERNAME>
-      - GIT_PAT=<YOUR_GIT_PERSONAL_ACCESS_TOKEN>
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /path/to/your/docker-config.json:/root/.docker/config.json # Mount Docker auth config for pulling images
-```
-
-Then, start the service:
-
-```shell
-docker-compose up -d
+```bash
+docker run -d --name composync \
+    -e INTERVAL=10 \ # Interval in minutes to check for updates
+    -e REPO_URL="https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git" \ # URL of your remote repository containing Docker Compose files
+    -e BRANCH="main" \ # Branch of the repository to use (default is 'main')
+    -e SCAN_DIR="/" \ # Directory in the repository where Docker Compose files are located
+    -e RECURSIVE=true \ # Whether to search through subdirectories for Docker Compose files
+    -e GIT_USERNAME="your_git_username" \ # Your GitHub username for authentication
+    -e GIT_PAT="your_personal_access_token" \ # Your GitHub personal access token for authentication
+    --volume /var/run/docker.sock:/var/run/docker.sock \ # Mount Docker socket to allow COMPOSYNC to manage Docker containers
+    yurymid/composync
 ```
 
 ## Installation Guide
@@ -47,13 +37,14 @@ docker-compose up -d
 Ensure you have the following installed:
 
 - **Docker** (v20.10.x or later)
-  - [Docker Installation Guides](https://docs.docker.com/get-docker/)
+    - [Docker Installation Guides](https://docs.docker.com/get-docker/)
 - **Docker Compose** (v2.14.0 or later) [Optional]
-  - [Docker Compose Installation](https://docs.docker.com/compose/install/)
+    - [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
 ### Configuration Steps
 
-1. **Generate a GitHub Authentication Token**: 
+1. **Generate a GitHub Authentication Token**:
+   This token is used to authenticate with GitHub and access private repositories if needed.
    ```shell
    echo -n 'GITHUBUSERNAME:TOKEN' | base64
    ```
@@ -71,14 +62,15 @@ Ensure you have the following installed:
    ```
 
 3. **Run the COMPOSYNC Container**:
+   Use the following command to run COMPOSYNC with the specified environment variables and volume mounts:
    ```shell
    docker run -d --name composync \
-       -e INTERVAL=30 \
-       -e REPO_URL="https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git" \
-       -e GIT_USERNAME=GITHUBUSERNAME \
-       -e GIT_PAT=TOKEN \
-       -v /var/run/docker.sock:/var/run/docker.sock \
-       -v ~/PATH/TO/config.json:/root/.docker/config.json \
+       -e INTERVAL=30 \ # Interval in minutes to check for updates
+       -e REPO_URL="https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git" \ # URL of your remote repository
+       -e GIT_USERNAME=GITHUBUSERNAME \ # Your GitHub username
+       -e GIT_PAT=TOKEN \ # Your GitHub personal access token
+       -v /var/run/docker.sock:/var/run/docker.sock \ # Mount Docker socket
+       -v ~/PATH/TO/config.json:/root/.docker/config.json \ # Mount Docker auth config
        yurymid/composync
    ```
 
@@ -93,16 +85,16 @@ services:
   composync:
     image: yurymid/composync
     environment:
-      - INTERVAL=30
-      - REPO_URL=https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git
-      - BRANCH=main
-      - SCAN-DIR=/
-      - RECURSIVE=true
-      - GIT_USERNAME=pieceowater
-      - GIT_PAT=ghp_12345...abc
+      - INTERVAL=30 # Interval in minutes to check for updates
+      - REPO_URL=https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git # URL of your remote repository
+      - BRANCH=main # Branch of the repository to use
+      - SCAN-DIR=/ # Directory in the repository with Docker Compose files
+      - RECURSIVE=true # Whether to search through subdirectories
+      - GIT_USERNAME=pieceowater # Your GitHub username
+      - GIT_PAT=ghp_12345...abc # Your GitHub personal access token
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /path/to/your/docker-config.json:/root/.docker/config.json
+      - /var/run/docker.sock:/var/run/docker.sock # Mount Docker socket
+      - /path/to/your/docker-config.json:/root/.docker/config.json # Mount Docker auth config
 ```
 
 To run this, navigate to the directory containing your Docker Compose file and execute:
@@ -115,14 +107,24 @@ docker-compose up -d
 
 To use COMPOSYNC without Docker:
 
-1. Clone the repository and navigate to the project directory.
-2. Run the `index.sh` script with the appropriate parameters:
+1. **Build and Install COMPOSYNC**:
+   Compile and install the COMPOSYNC application:
    ```shell
-   ./index.sh \
-       --repo="https://github.com/your-repo-url.git" \
-       --branch="main" \
-       --scan-dir="/" \
-       --recursive=true
+   go build
+   go install
+   ```
+
+2. **Run COMPOSYNC**:
+   Use the following command to start COMPOSYNC:
+   ```shell
+   composync go \
+       --interval=5 # Interval in minutes to check for updates, or 0 to run once
+       --repo=https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git \ # URL of your remote repository
+       --branch=main \ # Branch of the repository to use
+       --scan-dir=/ \ # Directory with Docker Compose files
+       --recursive=true \ # Whether to search through subdirectories
+       --username=gitusername \ # Your GitHub username
+       --token=gitpat123 # Your GitHub personal access token
    ```
 
 COMPOSYNC will then continuously monitor and update your Docker Compose containers.
