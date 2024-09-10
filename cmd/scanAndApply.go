@@ -69,7 +69,7 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 		return fmt.Errorf("error changing directory: %w", err)
 	}
 
-	var pullCmd, upCmd, pruneCmd *exec.Cmd
+	var pullCmd, upCmd *exec.Cmd
 	var dockerComposeCmd string
 
 	// Determine which Docker Compose command to use
@@ -108,13 +108,17 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 		return fmt.Errorf("error applying updates: %w", err)
 	}
 
-	// Prune old/unused images
-	pruneCmd = exec.Command("docker", "image", "prune", "-f")
-	fmt.Printf("%sRunning: %s\n", blue, pruneCmd.String())
-	pruneCmd.Stdout = os.Stdout
-	pruneCmd.Stderr = os.Stderr
-	if err := pruneCmd.Run(); err != nil {
-		return fmt.Errorf("error pruning images: %w", err)
+	// Check if Docker is available before pruning
+	if commandExists("docker") {
+		pruneCmd := exec.Command("docker", "image", "prune", "-f")
+		fmt.Printf("%sRunning: %s\n", blue, pruneCmd.String())
+		pruneCmd.Stdout = os.Stdout
+		pruneCmd.Stderr = os.Stderr
+		if err := pruneCmd.Run(); err != nil {
+			return fmt.Errorf("error pruning images: %w", err)
+		}
+	} else {
+		fmt.Printf("%sWarning: Docker command not found. Skipping image prune.%s\n", yellow, reset)
 	}
 
 	fmt.Printf("%sUpdates applied and old images pruned successfully in: %s%s\n", green, dir, reset)
