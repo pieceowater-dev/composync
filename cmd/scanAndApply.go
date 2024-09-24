@@ -110,7 +110,8 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 
 	// Check if Docker is available before pruning
 	if commandExists("docker") {
-		pruneCmd := exec.Command("docker", "image", "prune", "-f")
+		//pruneCmd := exec.Command("docker", "system", "prune", "-f")
+		pruneCmd := exec.Command("docker", "image", "prune", "-a")
 		fmt.Printf("%sRunning: %s\n", blue, pruneCmd.String())
 		pruneCmd.Stdout = os.Stdout
 		pruneCmd.Stderr = os.Stderr
