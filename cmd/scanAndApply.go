@@ -69,7 +69,8 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 		return fmt.Errorf("error changing directory: %w", err)
 	}
 
-	var pullCmd, upCmd *exec.Cmd
+	//var pullCmd, upCmd *exec.Cmd
+	var upCmd *exec.Cmd
 	var dockerComposeCmd string
 
 	// Determine which Docker Compose command to use
@@ -85,20 +86,20 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 
 	// Use the appropriate Docker Compose command
 	if dockerComposeCmd == "docker-compose" {
-		pullCmd = exec.Command("docker-compose", "pull")
+		//pullCmd = exec.Command("docker-compose", "pull")
 		upCmd = exec.Command("docker-compose", "up", "-d")
 	} else {
-		pullCmd = exec.Command("docker", "compose", "pull")
+		//pullCmd = exec.Command("docker", "compose", "pull")
 		upCmd = exec.Command("docker", "compose", "up", "-d")
 	}
 
-	// Execute the pull command
-	fmt.Printf("%sRunning: %s\n", blue, pullCmd.String())
-	pullCmd.Stdout = os.Stdout
-	pullCmd.Stderr = os.Stderr
-	if err := pullCmd.Run(); err != nil {
-		return fmt.Errorf("error pulling images: %w", err)
-	}
+	//// Execute the pull command
+	//fmt.Printf("%sRunning: %s\n", blue, pullCmd.String())
+	//pullCmd.Stdout = os.Stdout
+	//pullCmd.Stderr = os.Stderr
+	//if err := pullCmd.Run(); err != nil {
+	//	return fmt.Errorf("error pulling images: %w", err)
+	//}
 
 	// Execute the up command
 	fmt.Printf("%sRunning: %s\n", blue, upCmd.String())
@@ -110,8 +111,8 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 
 	// Check if Docker is available before pruning
 	if commandExists("docker") {
-		//pruneCmd := exec.Command("docker", "system", "prune", "-f")
-		pruneCmd := exec.Command("docker", "image", "prune", "-a")
+		pruneCmd := exec.Command("docker", "system", "prune", "-f")
+		//pruneCmd := exec.Command("docker", "image", "prune", "-a")
 		fmt.Printf("%sRunning: %s\n", blue, pruneCmd.String())
 		pruneCmd.Stdout = os.Stdout
 		pruneCmd.Stderr = os.Stderr
