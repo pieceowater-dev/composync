@@ -88,7 +88,7 @@ services:
       - INTERVAL=30 # Interval in minutes to check for updates
       - REPO_URL=https://github.com/pieceowater-dev/lotof.cloud.resources.dev.git # URL of your remote repository
       - BRANCH=main # Branch of the repository to use
-      - SCAN-DIR=/ # Directory in the repository with Docker Compose files
+      - SCAN_DIR=/ # Directory in the repository with Docker Compose files
       - RECURSIVE=true # Whether to search through subdirectories
       - GIT_USERNAME=pieceowater # Your GitHub username
       - GIT_PAT=ghp_12345...abc # Your GitHub personal access token
