@@ -27,6 +27,7 @@ FROM alpine:latest
 
 # Create a non-root user and group
 RUN addgroup -S composync && adduser -S composync -G composync
+RUN addgroup -S docker && adduser composync docker
 
 # Install runtime dependencies including bash, git, and Docker CLI
 RUN apk add --no-cache \
