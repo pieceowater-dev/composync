@@ -27,7 +27,6 @@ FROM alpine:latest
 
 # Create a non-root user and group
 RUN addgroup -S composync && adduser -S composync -G composync
-RUN addgroup -S docker && adduser composync docker
 
 # Install runtime dependencies including bash, git, and Docker CLI
 RUN apk add --no-cache \
@@ -37,9 +36,12 @@ RUN apk add --no-cache \
     ncurses \
     docker-cli
 
-# Install Docker Compose (optional)
+# Install Docker Compose
 RUN curl -L "https://github.com/docker/compose/releases/download/v2.14.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
+
+# Change permissions of Docker socket to allow access to the docker group
+RUN chown root:docker /var/run/docker.sock && chmod 660 /var/run/docker.sock
 
 # Copy the built Go application from the builder stage
 COPY --from=builder /app/composync /usr/local/bin/composync
@@ -51,6 +53,9 @@ RUN chown composync:composync /usr/local/bin/composync
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh && \
     chown composync:composync /usr/local/bin/entrypoint.sh
+
+# Add composync to the docker group for access to the socket
+RUN addgroup composync docker
 
 # Switch to the composync user
 USER composync
