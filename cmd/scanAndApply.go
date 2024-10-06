@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func scanAndApply(scanDir string, recursive bool) error {
@@ -25,7 +26,7 @@ func scanAndApply(scanDir string, recursive bool) error {
 			return nil
 		}
 
-		if info.Name() == "docker-compose.yml" || info.Name() == "docker-compose.yaml" {
+		if strings.HasSuffix(info.Name(), "compose.yml") || strings.HasSuffix(info.Name(), "compose.yaml") {
 			fmt.Printf("%sFound Docker Compose file: %s%s\n", green, path, reset)
 			if err := applyDockerComposeUpdates(path); err != nil {
 				fmt.Printf("%sError applying Docker Compose updates: %s%s\n", red, err, reset)
@@ -69,7 +70,6 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 		return fmt.Errorf("error changing directory: %w", err)
 	}
 
-	//var pullCmd, upCmd *exec.Cmd
 	var upCmd *exec.Cmd
 	var dockerComposeCmd string
 
@@ -84,22 +84,12 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 
 	fmt.Printf("%sUsing Docker Compose command: %s%s\n", blue, dockerComposeCmd, reset)
 
-	// Use the appropriate Docker Compose command
+	// Use the appropriate Docker Compose command with the specific compose file
 	if dockerComposeCmd == "docker-compose" {
-		//pullCmd = exec.Command("docker-compose", "pull")
-		upCmd = exec.Command("docker-compose", "up", "-d")
+		upCmd = exec.Command("docker-compose", "-f", composeFilePath, "up", "-d")
 	} else {
-		//pullCmd = exec.Command("docker", "compose", "pull")
-		upCmd = exec.Command("docker", "compose", "up", "-d")
+		upCmd = exec.Command("docker", "compose", "-f", composeFilePath, "up", "-d")
 	}
-
-	//// Execute the pull command
-	//fmt.Printf("%sRunning: %s\n", blue, pullCmd.String())
-	//pullCmd.Stdout = os.Stdout
-	//pullCmd.Stderr = os.Stderr
-	//if err := pullCmd.Run(); err != nil {
-	//	return fmt.Errorf("error pulling images: %w", err)
-	//}
 
 	// Execute the up command
 	fmt.Printf("%sRunning: %s\n", blue, upCmd.String())
@@ -111,8 +101,7 @@ func applyDockerComposeUpdates(composeFilePath string) error {
 
 	// Check if Docker is available before pruning
 	if commandExists("docker") {
-		pruneCmd := exec.Command("docker", "system", "prune", "-f")
-		//pruneCmd := exec.Command("docker", "image", "prune", "-a")
+		pruneCmd := exec.Command("docker", "image", "prune", "-f", "-a")
 		fmt.Printf("%sRunning: %s\n", blue, pruneCmd.String())
 		pruneCmd.Stdout = os.Stdout
 		pruneCmd.Stderr = os.Stderr

@@ -25,6 +25,9 @@ RUN go build -o composync ./main.go
 # Stage 2: Create the final image with runtime dependencies
 FROM alpine:latest
 
+# Create a non-root user and group
+RUN addgroup -S composync && adduser -S composync -G composync
+
 # Install runtime dependencies including bash, git, and Docker CLI
 RUN apk add --no-cache \
     bash \
@@ -40,9 +43,16 @@ RUN curl -L "https://github.com/docker/compose/releases/download/v2.14.0/docker-
 # Copy the built Go application from the builder stage
 COPY --from=builder /app/composync /usr/local/bin/composync
 
-# Copy the entrypoint script and set permissions
+# Change ownership of the application to the composync user
+RUN chown composync:composync /usr/local/bin/composync
+
+# Copy the entrypoint script, set permissions, and change ownership
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh && \
+    chown composync:composync /usr/local/bin/entrypoint.sh
+
+# Switch to the composync user
+USER composync
 
 # Set the entrypoint for the container
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

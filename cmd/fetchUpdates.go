@@ -10,7 +10,7 @@ func fetchUpdates(repoURL string, branch string) error {
 	if branch == "" {
 		branch = "main" // Default branch value
 	}
-	workDir := fmt.Sprintf("%s/PCWT", getWorkingDir())
+	workDir := getWorkingDir()
 	if err := os.Chdir(workDir); err != nil {
 		return fmt.Errorf("error changing directory: %w", err)
 	}

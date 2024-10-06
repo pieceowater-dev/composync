@@ -11,7 +11,7 @@ by [pieceowater](https://github.com/pieceowater)
 
 ## How It Works
 
-COMPOSYNC scans a specified directory for Docker Compose files (`docker-compose.yaml` or `docker-compose.yml`). It then pulls the latest changes from the remote repository and applies them to your local environment, ensuring your containers are always synchronized with the latest configurations.
+COMPOSYNC scans a specified directory for Docker Compose files (`*compose.yaml` or `*compose.yml`). It then pulls the latest changes from the remote repository and applies them to your local environment, ensuring your containers are always synchronized with the latest configurations.
 
 ## Quick Start
 
