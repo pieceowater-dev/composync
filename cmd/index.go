@@ -77,7 +77,7 @@ var goCmd = &cobra.Command{
 				fn   func() error
 			}{
 				{"storeGitCreds", func() error {
-					return storeGitCreds(username, token)
+					return storeGitCreds(repoURL, username, token)
 				}},
 				{"setupWorkdir", func() error {
 					return setupWorkdir(repoURL)
