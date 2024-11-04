@@ -16,7 +16,22 @@ func fetchUpdates(repoURL string, branch string) error {
 	}
 
 	remoteCommit := getGitCommit(repoURL, branch)
-	localCommit := getLocalCommit(branch)
+	localCommit, err := getLocalCommit(branch)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("%sLocal branch not found. Attempting to check out %s...%s", yellow, branch, reset))
+		// Attempt to check out the branch
+		checkoutCmd := exec.Command("git", "checkout", "-b", branch, "--track", "origin/"+branch)
+		checkoutCmd.Stdout = os.Stdout
+		checkoutCmd.Stderr = os.Stderr
+		if checkoutErr := checkoutCmd.Run(); checkoutErr != nil {
+			return fmt.Errorf("failed to checkout branch %s: %w", branch, checkoutErr)
+		}
+		// Retry getting the commit after checkout
+		localCommit, err = getLocalCommit(branch)
+		if err != nil {
+			return fmt.Errorf("error retrieving local commit after checkout: %w", err)
+		}
+	}
 
 	if remoteCommit != localCommit {
 		fmt.Println(fmt.Sprintf("%sChanges detected in the remote repository.%s", green, reset))
@@ -27,11 +42,10 @@ func fetchUpdates(repoURL string, branch string) error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("error pulling changes: %w", err)
 		}
-		return nil
 	} else {
 		fmt.Println(fmt.Sprintf("%sNo changes detected in the remote repository.%s", yellow, reset))
-		return nil
 	}
+	return nil
 }
 
 func getGitCommit(repo, branch string) string {
@@ -44,12 +58,11 @@ func getGitCommit(repo, branch string) string {
 	return string(output[:40])
 }
 
-func getLocalCommit(branch string) string {
-	cmd := exec.Command("git", "rev-parse", branch)
+func getLocalCommit(branch string) (string, error) {
+	cmd := exec.Command("git", "rev-parse", "--verify", branch)
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(fmt.Sprintf("%sError getting local commit: %s%s", red, err, reset))
-		os.Exit(1)
+		return "", fmt.Errorf("error getting local commit: %w", err)
 	}
-	return string(output[:40])
+	return string(output[:40]), nil
 }
